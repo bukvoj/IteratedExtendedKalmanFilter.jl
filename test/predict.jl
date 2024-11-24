@@ -132,3 +132,57 @@ end
     @test x == [1.0,8.0,81.0]
 end
 
+@testset "predict.jl: integer inputs" begin 
+    Q = [1 2 3; 2 3 4; 3 4 5]
+    P = [5 4 3; 4 3 2; 3 2 1]
+
+    F1 = powersjac([1,2,3])
+    F2 = upowersjac1([1,2,3],2)
+    F3 = upowersjac2([1,2,3],[1,2,3])    
+
+    P1 = F1*P*F1' + Q
+    P2 = F2*P*F2' + Q
+    P3 = F3*P*F3' + Q
+
+    @test P1 ≈ P1'
+    @test P2 ≈ P2'
+    @test P3 ≈ P3'
+
+    # Autodiff tests
+    x,P_new = iekfpredict(powers,[1,2,3],P,Q)
+    @test P_new ≈ P1
+    @test x == [1,4,27]
+    x,P_new = iekfpredict(upowers1,[1,2,3],P,Q,2)
+    @test P_new ≈ P2
+    @test x == [2,4*2,27*2]
+    x,P_new = iekfpredict(upowers2,[1,2,3],P,Q,[1,2,3])
+    @test P_new ≈ P3
+    @test x == [1,8,81]
+
+    # Analytic tests
+    x,P_new = iekfpredict(powers,powersjac,[1,2,3],P,Q)
+    @test P_new ≈ P1
+    @test x == [1,4,27]
+    x,P_new = iekfpredict(upowers1,upowersjac1,[1,2,3],P,Q,2)
+    @test P_new ≈ P2
+    @test x == [2,4*2,27*2]
+    x,P_new = iekfpredict(upowers2,upowersjac2,[1,2,3],P,Q,[1,2,3])
+    @test P_new ≈ P3
+    @test x == [1,8,81]
+
+    # Precomputed Jacobian tests
+    x,P_new = iekfpredict(powers,F1,[1,2,3],P,Q)
+    @test P_new ≈ P1
+    @test x == [1,4,27]
+    x,P_new = iekfpredict(upowers1,F2,[1,2,3],P,Q,2)
+end
+
+@testset "predict.jl: scalar system" begin
+    x,P_new = iekfpredict(x -> x^2, 2, 1, 1)
+    @test x ≈ 4
+    @test P_new ≈ 17
+    x,P_new = iekfpredict(x -> x^2, x -> 2*x, 2, 1, 1)
+    @test x ≈ 4
+    @test P_new ≈ 17
+end
+
