@@ -1,11 +1,16 @@
 # Implements the data (measurement, correction) step of the iekf algorithm
 
+# This is to differentiate between scalar and multidimensional system and measurement
+for XTYPE in ((Vector{<:Real},AbstractArray{<:Real}),(Real,Real))
+for YTYPE in ((Vector{<:Real},AbstractArray{<:Real}),(Real,Real))
+@eval begin
+
 function iekfcorrect(h::Function, 
                     getjac::Function, 
-                    x::Union{Vector, Real},
-                    P::Union{AbstractArray, Real},
-                    y::Union{Vector, Real},
-                    R::Union{AbstractArray, Real},
+                    x::$XTYPE[1],
+                    P::$XTYPE[2],
+                    y::$YTYPE[1],
+                    R::$YTYPE[2],
                     maxiters=30,eps=1e-8,
                     u...)
     xi = x
@@ -28,10 +33,10 @@ function iekfcorrect(h::Function,
 end
 
 function iekfcorrect(h::Function, 
-                    x::Union{Vector, Real},
-                    P::Union{AbstractArray, Real},
-                    y::Union{Vector, Real},
-                    R::Union{AbstractArray, Real},
+                    x::$XTYPE[1],
+                    P::$XTYPE[2],
+                    y::$YTYPE[1],
+                    R::$YTYPE[2],
                     maxiters=30,eps=1e-8,
                     u...)
     xi = x/1 # This is a hack to make the type system happy
@@ -53,4 +58,9 @@ function iekfcorrect(h::Function,
             i += 1
         end
     end
+end
+
+
+end
+end
 end
