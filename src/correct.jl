@@ -22,9 +22,7 @@ function iekfcorrect(h::Function,
         Si = Hi*P*Hi' + R
         Ki = P*Hi'*inv(Si)
         xi = x + Ki*(residual-Hi*(x-xi))
-        if norm(xi-prev) < eps
-            return xi, P-Ki*Hi*P, residual, Si, Ki, Hi, i
-        elseif i == maxiters
+        if norm(xi-prev) < eps || i == maxiters
             return xi, P-Ki*Hi*P, residual, Si, Ki, Hi, i
         else
             i += 1
@@ -41,7 +39,7 @@ function iekfcorrect(h::Function,
                     u...)
     xi = x/1 # This is a hack to make the type system happy
     i = 1
-    while true
+    while true 
         prev = xi
         hh = args -> h(args,u...)
         tmp,y_hat = jacobian(ForwardWithPrimal, hh, xi)
@@ -50,9 +48,7 @@ function iekfcorrect(h::Function,
         Si = Hi*P*Hi' + R
         Ki = P*Hi'*inv(Si)
         xi = x + Ki*(residual-Hi*(x-xi))
-        if norm(xi-prev) < eps
-            return xi, P-Ki*Hi*P, residual, Si, Ki, Hi, i
-        elseif i == maxiters
+        if norm(xi-prev) < eps || i == maxiters
             return xi, P-Ki*Hi*P, residual, Si, Ki, Hi, i
         else
             i += 1
@@ -61,6 +57,6 @@ function iekfcorrect(h::Function,
 end
 
 
-end
-end
-end
+end #eval
+end #for
+end #for
